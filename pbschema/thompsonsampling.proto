@@ -1,0 +1,17 @@
+syntax = "proto3";
+package thompsonsamplingdeclare;
+option go_package = "./thompsonsampling";
+
+service THOMPSONSAMPLING {
+    rpc Rank (Query) returns (Response){}
+}
+message Query {
+    bool desc = 1;//是否倒叙从大到小
+    string business_namespcae = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+    string target_namespace = 3; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+    repeated string candidates = 4;
+}
+
+message Response {
+    repeated string ordered_candidates = 1;
+}
