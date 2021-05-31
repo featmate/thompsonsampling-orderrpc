@@ -3,12 +3,22 @@ package thompsonsampling;
 option go_package = "./thompsonsampling";
 
 service THOMPSONSAMPLING {
+    //Meta 获取指定业务命名空间下指定目标命名空间的元数据
+    rpc Meta (MetaQuery) returns (MetaResponse);
     //Update 更新参数
     rpc Update (UpdateQuery) returns (UpdateResponse){}
     //Rank 排序候选集
     rpc Rank (RankQuery) returns (RankResponse){}
     //Top 返回可能性最大的后选者
     rpc Top(TopQuery) returns (TopResponse){}
+}
+message MetaQuery {
+    string business_namespace = 1; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+    string target_namespace = 2; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+}
+message MetaResponse {
+    repeated string candidates = 1;
+    int64 ttl = 2;
 }
 
 message CandidateUpdateInfo {

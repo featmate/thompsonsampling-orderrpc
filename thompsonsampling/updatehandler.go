@@ -13,11 +13,17 @@ func (s *Server) ResetParamToRedis(business_namespcae, target_namespacestring st
 	ctx, cancel := s.QueryRedisCtx()
 	defer cancel()
 	pipe := rp.Proxy.TxPipeline()
+	metakey := BuildMetaKey(business_namespcae, target_namespacestring)
+	pipe.Del(ctx, metakey)
+	candidates := []interface{}{}
 	for _, info := range infos {
+		candidates = append(candidates, info.Candidate)
 		key := BuildKey(business_namespcae, target_namespacestring, info.Candidate)
 		pipe.HSet(ctx, key, "alpha", info.Alpha, "beta", info.Beta)
 		pipe.Expire(ctx, key, ttl)
 	}
+	pipe.SAdd(ctx, metakey, candidates...)
+	pipe.Expire(ctx, metakey, ttl)
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -31,12 +37,17 @@ func (s *Server) IncrParamToRedis(business_namespcae, target_namespacestring str
 	alphafus := map[string]*redis.FloatCmd{}
 	betafus := map[string]*redis.FloatCmd{}
 	pipe := rp.Proxy.TxPipeline()
+	metakey := BuildMetaKey(business_namespcae, target_namespacestring)
+	candidates := []interface{}{}
 	for _, info := range infos {
+		candidates = append(candidates, info.Candidate)
 		key := BuildKey(business_namespcae, target_namespacestring, info.Candidate)
 		alphafus[info.Candidate] = pipe.HIncrByFloat(ctx, key, "alpha", info.Alpha)
 		betafus[info.Candidate] = pipe.HIncrByFloat(ctx, key, "beta", info.Beta)
 		pipe.Expire(ctx, key, ttl)
 	}
+	pipe.SAdd(ctx, metakey, candidates...)
+	pipe.Expire(ctx, metakey, ttl)
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return nil, err
