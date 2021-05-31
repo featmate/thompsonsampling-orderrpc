@@ -49,7 +49,7 @@ func (s *Server) Update(ctx context.Context, in *UpdateQuery) (*UpdateResponse, 
 	if in.Candidate == "" {
 		return nil, errors.New("Candidate empty")
 	}
-	key := BuildKey(in.BusinessNamespcae, in.TargetNamespace, in.Candidate)
+	key := BuildKey(in.BusinessNamespace, in.TargetNamespace, in.Candidate)
 	var alpha float64
 	var beta float64
 	var err error

@@ -3,30 +3,21 @@ package thompsonsampling;
 option go_package = "./thompsonsampling";
 
 service THOMPSONSAMPLING {
-    // rpc Meta (MetaQuery) returns (MetaResponse){}// 查看当前有哪些业务命名空间,业务命名空间有哪些目标命名空间
+    //Update 更新参数
     rpc Update (UpdateQuery) returns (UpdateResponse){}
+    //Rank 排序候选集
     rpc Rank (RankQuery) returns (RankResponse){}
+    //Top 返回可能性最大的后选者
+    rpc Top(TopQuery) returns (TopResponse){}
 }
 
-// message MetaQuery {
-//     string business_namespcae = 1; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
-// }
-
-// message BusinessTargets {
-//     string business_namespcae = 1; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
-//     repeated string target_namespaces = 2; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
-// }
-
-// message MetaResponse {
-//     repeated string ordered_candidates = 1;
-// }
 message UpdateQuery {
     enum Type {
         INCR = 0;
         RESET = 1;
     }
     Type update_type = 1;// 更新类型,是重置还是增量
-    string business_namespcae = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+    string business_namespace = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
     string target_namespace = 3; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
     string candidate = 4;// 针对的目标候选人
     double alpha = 5;//候选人的alpha参数
@@ -41,11 +32,24 @@ message UpdateResponse {
 
 message RankQuery {
     bool desc = 1;//是否倒叙从大到小
-    string business_namespcae = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+    string business_namespace = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
     string target_namespace = 3; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
     repeated string candidates = 4;
 }
 
+message WeightedCandidate {
+    string Candidate = 1;
+    double Weight = 2;
+}
+
 message RankResponse {
-    repeated string ordered_candidates = 1;
+    repeated WeightedCandidate ordered_candidates = 1;
+}
+message TopQuery {
+    string business_namespace = 1; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+    string target_namespace = 2; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+    repeated string candidates = 3;
+}
+message TopResponse {
+    string candidate = 1;
 }

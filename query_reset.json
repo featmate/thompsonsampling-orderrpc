@@ -1,0 +1,8 @@
+{
+    "update_type": 1,
+    "business_namespace": "test",
+    "target_namespace": "test",
+    "candidate": "a",
+    "alpha": 1.0,
+    "beta": 4.0
+}

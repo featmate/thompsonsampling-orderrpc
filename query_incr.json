@@ -1,0 +1,7 @@
+{
+    "business_namespace": "test",
+    "target_namespace": "test",
+    "candidate": "a",
+    "alpha": 2.0,
+    "beta": 4.0
+}

@@ -13,6 +13,7 @@ import (
 
 	log "github.com/Golang-Tools/loggerhelper"
 	se "github.com/Golang-Tools/schema-entry-go"
+	"gonum.org/v1/gonum/stat/distuv"
 
 	"github.com/liyue201/grpc-lb/common"
 	"github.com/liyue201/grpc-lb/registry"
@@ -72,6 +73,8 @@ type Server struct {
 	service       *registry.ServiceInfo
 	healthservice *health.Server
 	registrar     *zk.Registrar
+
+	betapool *sync.Pool
 }
 
 func (s *Server) QueryRedisCtx() (context.Context, context.CancelFunc) {
@@ -97,6 +100,12 @@ func (s *Server) Main() {
 
 	rp.Proxy.InitFromURL(s.RedisURL)
 	defer rp.Proxy.Close()
+
+	s.betapool = &sync.Pool{
+		New: func() interface{} {
+			return new(distuv.Beta)
+		},
+	}
 	s.Run()
 }
 
