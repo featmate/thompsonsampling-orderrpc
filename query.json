@@ -1,0 +1,5 @@
+{
+    "business_namespcae": "test",
+    "target_namespace": "test",
+    "candidates": ["a", "b", "c"]
+}

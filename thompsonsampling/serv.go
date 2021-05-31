@@ -1,6 +1,7 @@
 package thompsonsampling
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	log "github.com/Golang-Tools/loggerhelper"
+	se "github.com/Golang-Tools/schema-entry-go"
 
 	"github.com/liyue201/grpc-lb/common"
 	"github.com/liyue201/grpc-lb/registry"
@@ -65,10 +67,23 @@ type Server struct {
 
 	RedisURL          string `json:"redis_url,omitempty" jsonschema:"required,description=保存点击和未点击数据的redis位置"`
 	QueryRedisTimeout int    `json:"query_redis_timeout,omitempty" jsonschema:"description=请求redis的超时时长"`
+	DefaultKeyTTL     int    `json:"default_key_ttl,omitempty" jsonschema:"description=保存键的默认过期时间"`
 
 	service       *registry.ServiceInfo
 	healthservice *health.Server
 	registrar     *zk.Registrar
+}
+
+func (s *Server) QueryRedisCtx() (context.Context, context.CancelFunc) {
+	var ctx context.Context
+	var cancel context.CancelFunc
+	if s.QueryRedisTimeout > 0 {
+		timeout := time.Duration(s.QueryRedisTimeout) * time.Millisecond
+		ctx, cancel = context.WithTimeout(context.Background(), timeout)
+	} else {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
+	return ctx, cancel
 }
 
 //Main 服务的入口函数
@@ -234,3 +249,16 @@ func (s *Server) Run() {
 		wg.Wait()
 	}
 }
+
+var ServNode, _ = se.New(
+	&se.EntryPointMeta{Name: "thompson_sampling", Usage: "thompson_sampling [options]"},
+	&Server{
+		AppName:           "thompsonsampling",
+		AppVersion:        "0.0.0",
+		LogLevel:          "DEBUG",
+		Address:           "0.0.0.0:5000",
+		RedisURL:          "redis://localhost",
+		QueryRedisTimeout: 50,
+		DefaultKeyTTL:     3600,
+	},
+)

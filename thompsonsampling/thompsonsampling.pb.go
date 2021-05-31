@@ -29,19 +29,71 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type Query struct {
+type UpdateQuery_Type int32
+
+const (
+	UpdateQuery_INCR  UpdateQuery_Type = 0
+	UpdateQuery_RESET UpdateQuery_Type = 1
+)
+
+// Enum value maps for UpdateQuery_Type.
+var (
+	UpdateQuery_Type_name = map[int32]string{
+		0: "INCR",
+		1: "RESET",
+	}
+	UpdateQuery_Type_value = map[string]int32{
+		"INCR":  0,
+		"RESET": 1,
+	}
+)
+
+func (x UpdateQuery_Type) Enum() *UpdateQuery_Type {
+	p := new(UpdateQuery_Type)
+	*p = x
+	return p
+}
+
+func (x UpdateQuery_Type) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (UpdateQuery_Type) Descriptor() protoreflect.EnumDescriptor {
+	return file_thompsonsampling_proto_enumTypes[0].Descriptor()
+}
+
+func (UpdateQuery_Type) Type() protoreflect.EnumType {
+	return &file_thompsonsampling_proto_enumTypes[0]
+}
+
+func (x UpdateQuery_Type) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use UpdateQuery_Type.Descriptor instead.
+func (UpdateQuery_Type) EnumDescriptor() ([]byte, []int) {
+	return file_thompsonsampling_proto_rawDescGZIP(), []int{0, 0}
+}
+
+// message MetaResponse {
+//     repeated string ordered_candidates = 1;
+// }
+type UpdateQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Desc              bool     `protobuf:"varint,1,opt,name=desc,proto3" json:"desc,omitempty"`                                                   //是否倒叙从大到小
-	BusinessNamespcae string   `protobuf:"bytes,2,opt,name=business_namespcae,json=businessNamespcae,proto3" json:"business_namespcae,omitempty"` //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
-	TargetNamespace   string   `protobuf:"bytes,3,opt,name=target_namespace,json=targetNamespace,proto3" json:"target_namespace,omitempty"`       //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
-	Candidates        []string `protobuf:"bytes,4,rep,name=candidates,proto3" json:"candidates,omitempty"`
+	UpdateType        UpdateQuery_Type `protobuf:"varint,1,opt,name=update_type,json=updateType,proto3,enum=thompsonsampling.UpdateQuery_Type" json:"update_type,omitempty"` // 更新类型,是重置还是增量
+	BusinessNamespcae string           `protobuf:"bytes,2,opt,name=business_namespcae,json=businessNamespcae,proto3" json:"business_namespcae,omitempty"`                    //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+	TargetNamespace   string           `protobuf:"bytes,3,opt,name=target_namespace,json=targetNamespace,proto3" json:"target_namespace,omitempty"`                          //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+	Candidate         string           `protobuf:"bytes,4,opt,name=candidate,proto3" json:"candidate,omitempty"`                                                             // 针对的目标候选人
+	Alpha             float64          `protobuf:"fixed64,5,opt,name=alpha,proto3" json:"alpha,omitempty"`                                                                   //候选人的alpha参数
+	Beta              float64          `protobuf:"fixed64,6,opt,name=beta,proto3" json:"beta,omitempty"`                                                                     //候选人的beta参数
+	Ttl               int64            `protobuf:"varint,7,opt,name=ttl,proto3" json:"ttl,omitempty"`                                                                        //reset键的过期时长,单位s
 }
 
-func (x *Query) Reset() {
-	*x = Query{}
+func (x *UpdateQuery) Reset() {
+	*x = UpdateQuery{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_thompsonsampling_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -49,13 +101,13 @@ func (x *Query) Reset() {
 	}
 }
 
-func (x *Query) String() string {
+func (x *UpdateQuery) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Query) ProtoMessage() {}
+func (*UpdateQuery) ProtoMessage() {}
 
-func (x *Query) ProtoReflect() protoreflect.Message {
+func (x *UpdateQuery) ProtoReflect() protoreflect.Message {
 	mi := &file_thompsonsampling_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -67,49 +119,71 @@ func (x *Query) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Query.ProtoReflect.Descriptor instead.
-func (*Query) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateQuery.ProtoReflect.Descriptor instead.
+func (*UpdateQuery) Descriptor() ([]byte, []int) {
 	return file_thompsonsampling_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Query) GetDesc() bool {
+func (x *UpdateQuery) GetUpdateType() UpdateQuery_Type {
 	if x != nil {
-		return x.Desc
+		return x.UpdateType
 	}
-	return false
+	return UpdateQuery_INCR
 }
 
-func (x *Query) GetBusinessNamespcae() string {
+func (x *UpdateQuery) GetBusinessNamespcae() string {
 	if x != nil {
 		return x.BusinessNamespcae
 	}
 	return ""
 }
 
-func (x *Query) GetTargetNamespace() string {
+func (x *UpdateQuery) GetTargetNamespace() string {
 	if x != nil {
 		return x.TargetNamespace
 	}
 	return ""
 }
 
-func (x *Query) GetCandidates() []string {
+func (x *UpdateQuery) GetCandidate() string {
 	if x != nil {
-		return x.Candidates
+		return x.Candidate
 	}
-	return nil
+	return ""
 }
 
-type Response struct {
+func (x *UpdateQuery) GetAlpha() float64 {
+	if x != nil {
+		return x.Alpha
+	}
+	return 0
+}
+
+func (x *UpdateQuery) GetBeta() float64 {
+	if x != nil {
+		return x.Beta
+	}
+	return 0
+}
+
+func (x *UpdateQuery) GetTtl() int64 {
+	if x != nil {
+		return x.Ttl
+	}
+	return 0
+}
+
+type UpdateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrderedCandidates []string `protobuf:"bytes,1,rep,name=ordered_candidates,json=orderedCandidates,proto3" json:"ordered_candidates,omitempty"`
+	Alpha float64 `protobuf:"fixed64,1,opt,name=alpha,proto3" json:"alpha,omitempty"` //候选人的alpha参数当前值
+	Beta  float64 `protobuf:"fixed64,2,opt,name=beta,proto3" json:"beta,omitempty"`   //候选人的beta参数当前值
 }
 
-func (x *Response) Reset() {
-	*x = Response{}
+func (x *UpdateResponse) Reset() {
+	*x = UpdateResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_thompsonsampling_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -117,13 +191,13 @@ func (x *Response) Reset() {
 	}
 }
 
-func (x *Response) String() string {
+func (x *UpdateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Response) ProtoMessage() {}
+func (*UpdateResponse) ProtoMessage() {}
 
-func (x *Response) ProtoReflect() protoreflect.Message {
+func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_thompsonsampling_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -135,12 +209,137 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Response.ProtoReflect.Descriptor instead.
-func (*Response) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
+func (*UpdateResponse) Descriptor() ([]byte, []int) {
 	return file_thompsonsampling_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Response) GetOrderedCandidates() []string {
+func (x *UpdateResponse) GetAlpha() float64 {
+	if x != nil {
+		return x.Alpha
+	}
+	return 0
+}
+
+func (x *UpdateResponse) GetBeta() float64 {
+	if x != nil {
+		return x.Beta
+	}
+	return 0
+}
+
+type RankQuery struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Desc              bool     `protobuf:"varint,1,opt,name=desc,proto3" json:"desc,omitempty"`                                                   //是否倒叙从大到小
+	BusinessNamespcae string   `protobuf:"bytes,2,opt,name=business_namespcae,json=businessNamespcae,proto3" json:"business_namespcae,omitempty"` //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+	TargetNamespace   string   `protobuf:"bytes,3,opt,name=target_namespace,json=targetNamespace,proto3" json:"target_namespace,omitempty"`       //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+	Candidates        []string `protobuf:"bytes,4,rep,name=candidates,proto3" json:"candidates,omitempty"`
+}
+
+func (x *RankQuery) Reset() {
+	*x = RankQuery{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_thompsonsampling_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RankQuery) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RankQuery) ProtoMessage() {}
+
+func (x *RankQuery) ProtoReflect() protoreflect.Message {
+	mi := &file_thompsonsampling_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RankQuery.ProtoReflect.Descriptor instead.
+func (*RankQuery) Descriptor() ([]byte, []int) {
+	return file_thompsonsampling_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RankQuery) GetDesc() bool {
+	if x != nil {
+		return x.Desc
+	}
+	return false
+}
+
+func (x *RankQuery) GetBusinessNamespcae() string {
+	if x != nil {
+		return x.BusinessNamespcae
+	}
+	return ""
+}
+
+func (x *RankQuery) GetTargetNamespace() string {
+	if x != nil {
+		return x.TargetNamespace
+	}
+	return ""
+}
+
+func (x *RankQuery) GetCandidates() []string {
+	if x != nil {
+		return x.Candidates
+	}
+	return nil
+}
+
+type RankResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	OrderedCandidates []string `protobuf:"bytes,1,rep,name=ordered_candidates,json=orderedCandidates,proto3" json:"ordered_candidates,omitempty"`
+}
+
+func (x *RankResponse) Reset() {
+	*x = RankResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_thompsonsampling_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RankResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RankResponse) ProtoMessage() {}
+
+func (x *RankResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_thompsonsampling_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RankResponse.ProtoReflect.Descriptor instead.
+func (*RankResponse) Descriptor() ([]byte, []int) {
+	return file_thompsonsampling_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RankResponse) GetOrderedCandidates() []string {
 	if x != nil {
 		return x.OrderedCandidates
 	}
@@ -151,30 +350,56 @@ var File_thompsonsampling_proto protoreflect.FileDescriptor
 
 var file_thompsonsampling_proto_rawDesc = []byte{
 	0x0a, 0x16, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69,
-	0x6e, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x17, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73,
-	0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69, 0x6e, 0x67, 0x64, 0x65, 0x63, 0x6c, 0x61, 0x72,
-	0x65, 0x22, 0x95, 0x01, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x64,
-	0x65, 0x73, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x04, 0x64, 0x65, 0x73, 0x63, 0x12,
+	0x6e, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x10, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73,
+	0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69, 0x6e, 0x67, 0x22, 0xa3, 0x02, 0x0a, 0x0b, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x43, 0x0a, 0x0b, 0x75, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32,
+	0x22, 0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69,
+	0x6e, 0x67, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x54,
+	0x79, 0x70, 0x65, 0x52, 0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x54, 0x79, 0x70, 0x65, 0x12,
 	0x2d, 0x0a, 0x12, 0x62, 0x75, 0x73, 0x69, 0x6e, 0x65, 0x73, 0x73, 0x5f, 0x6e, 0x61, 0x6d, 0x65,
 	0x73, 0x70, 0x63, 0x61, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x62, 0x75, 0x73,
 	0x69, 0x6e, 0x65, 0x73, 0x73, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x63, 0x61, 0x65, 0x12, 0x29,
 	0x0a, 0x10, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
 	0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
-	0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x63, 0x61, 0x6e,
-	0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x63,
-	0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x22, 0x39, 0x0a, 0x08, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2d, 0x0a, 0x12, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x65, 0x64,
-	0x5f, 0x63, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
-	0x09, 0x52, 0x11, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x65, 0x64, 0x43, 0x61, 0x6e, 0x64, 0x69, 0x64,
-	0x61, 0x74, 0x65, 0x73, 0x32, 0x5f, 0x0a, 0x10, 0x54, 0x48, 0x4f, 0x4d, 0x50, 0x53, 0x4f, 0x4e,
-	0x53, 0x41, 0x4d, 0x50, 0x4c, 0x49, 0x4e, 0x47, 0x12, 0x4b, 0x0a, 0x04, 0x52, 0x61, 0x6e, 0x6b,
-	0x12, 0x1e, 0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c,
-	0x69, 0x6e, 0x67, 0x64, 0x65, 0x63, 0x6c, 0x61, 0x72, 0x65, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
-	0x1a, 0x21, 0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c,
-	0x69, 0x6e, 0x67, 0x64, 0x65, 0x63, 0x6c, 0x61, 0x72, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x1b, 0x5a, 0x19, 0x2e, 0x2f, 0x74, 0x68, 0x6f, 0x6d, 0x70,
-	0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69, 0x6e, 0x67, 0x64, 0x65, 0x63, 0x6c, 0x61,
-	0x72, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x63, 0x61, 0x6e,
+	0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x63, 0x61,
+	0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x70, 0x68, 0x61,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x12, 0x12, 0x0a,
+	0x04, 0x62, 0x65, 0x74, 0x61, 0x18, 0x06, 0x20, 0x01, 0x28, 0x01, 0x52, 0x04, 0x62, 0x65, 0x74,
+	0x61, 0x12, 0x10, 0x0a, 0x03, 0x74, 0x74, 0x6c, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03,
+	0x74, 0x74, 0x6c, 0x22, 0x1b, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x49,
+	0x4e, 0x43, 0x52, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x52, 0x45, 0x53, 0x45, 0x54, 0x10, 0x01,
+	0x22, 0x3a, 0x0a, 0x0e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x01, 0x52, 0x05, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x62, 0x65, 0x74, 0x61,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x04, 0x62, 0x65, 0x74, 0x61, 0x22, 0x99, 0x01, 0x0a,
+	0x09, 0x52, 0x61, 0x6e, 0x6b, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x65,
+	0x73, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x04, 0x64, 0x65, 0x73, 0x63, 0x12, 0x2d,
+	0x0a, 0x12, 0x62, 0x75, 0x73, 0x69, 0x6e, 0x65, 0x73, 0x73, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73,
+	0x70, 0x63, 0x61, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x62, 0x75, 0x73, 0x69,
+	0x6e, 0x65, 0x73, 0x73, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x63, 0x61, 0x65, 0x12, 0x29, 0x0a,
+	0x10, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x4e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x63, 0x61, 0x6e, 0x64,
+	0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x63, 0x61,
+	0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x22, 0x3d, 0x0a, 0x0c, 0x52, 0x61, 0x6e, 0x6b,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2d, 0x0a, 0x12, 0x6f, 0x72, 0x64, 0x65,
+	0x72, 0x65, 0x64, 0x5f, 0x63, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x09, 0x52, 0x11, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x65, 0x64, 0x43, 0x61, 0x6e,
+	0x64, 0x69, 0x64, 0x61, 0x74, 0x65, 0x73, 0x32, 0xa6, 0x01, 0x0a, 0x10, 0x54, 0x48, 0x4f, 0x4d,
+	0x50, 0x53, 0x4f, 0x4e, 0x53, 0x41, 0x4d, 0x50, 0x4c, 0x49, 0x4e, 0x47, 0x12, 0x4b, 0x0a, 0x06,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x1d, 0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f,
+	0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69, 0x6e, 0x67, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x51, 0x75, 0x65, 0x72, 0x79, 0x1a, 0x20, 0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e,
+	0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69, 0x6e, 0x67, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x45, 0x0a, 0x04, 0x52, 0x61, 0x6e,
+	0x6b, 0x12, 0x1b, 0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70,
+	0x6c, 0x69, 0x6e, 0x67, 0x2e, 0x52, 0x61, 0x6e, 0x6b, 0x51, 0x75, 0x65, 0x72, 0x79, 0x1a, 0x1e,
+	0x2e, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x69, 0x6e,
+	0x67, 0x2e, 0x52, 0x61, 0x6e, 0x6b, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
+	0x42, 0x14, 0x5a, 0x12, 0x2e, 0x2f, 0x74, 0x68, 0x6f, 0x6d, 0x70, 0x73, 0x6f, 0x6e, 0x73, 0x61,
+	0x6d, 0x70, 0x6c, 0x69, 0x6e, 0x67, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -189,19 +414,26 @@ func file_thompsonsampling_proto_rawDescGZIP() []byte {
 	return file_thompsonsampling_proto_rawDescData
 }
 
-var file_thompsonsampling_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_thompsonsampling_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_thompsonsampling_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_thompsonsampling_proto_goTypes = []interface{}{
-	(*Query)(nil),    // 0: thompsonsamplingdeclare.Query
-	(*Response)(nil), // 1: thompsonsamplingdeclare.Response
+	(UpdateQuery_Type)(0),  // 0: thompsonsampling.UpdateQuery.Type
+	(*UpdateQuery)(nil),    // 1: thompsonsampling.UpdateQuery
+	(*UpdateResponse)(nil), // 2: thompsonsampling.UpdateResponse
+	(*RankQuery)(nil),      // 3: thompsonsampling.RankQuery
+	(*RankResponse)(nil),   // 4: thompsonsampling.RankResponse
 }
 var file_thompsonsampling_proto_depIdxs = []int32{
-	0, // 0: thompsonsamplingdeclare.THOMPSONSAMPLING.Rank:input_type -> thompsonsamplingdeclare.Query
-	1, // 1: thompsonsamplingdeclare.THOMPSONSAMPLING.Rank:output_type -> thompsonsamplingdeclare.Response
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: thompsonsampling.UpdateQuery.update_type:type_name -> thompsonsampling.UpdateQuery.Type
+	1, // 1: thompsonsampling.THOMPSONSAMPLING.Update:input_type -> thompsonsampling.UpdateQuery
+	3, // 2: thompsonsampling.THOMPSONSAMPLING.Rank:input_type -> thompsonsampling.RankQuery
+	2, // 3: thompsonsampling.THOMPSONSAMPLING.Update:output_type -> thompsonsampling.UpdateResponse
+	4, // 4: thompsonsampling.THOMPSONSAMPLING.Rank:output_type -> thompsonsampling.RankResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_thompsonsampling_proto_init() }
@@ -211,7 +443,7 @@ func file_thompsonsampling_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_thompsonsampling_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Query); i {
+			switch v := v.(*UpdateQuery); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -223,7 +455,31 @@ func file_thompsonsampling_proto_init() {
 			}
 		}
 		file_thompsonsampling_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Response); i {
+			switch v := v.(*UpdateResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_thompsonsampling_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RankQuery); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_thompsonsampling_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RankResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -240,13 +496,14 @@ func file_thompsonsampling_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_thompsonsampling_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_thompsonsampling_proto_goTypes,
 		DependencyIndexes: file_thompsonsampling_proto_depIdxs,
+		EnumInfos:         file_thompsonsampling_proto_enumTypes,
 		MessageInfos:      file_thompsonsampling_proto_msgTypes,
 	}.Build()
 	File_thompsonsampling_proto = out.File
@@ -267,7 +524,9 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type THOMPSONSAMPLINGClient interface {
-	Rank(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	// rpc Meta (MetaQuery) returns (MetaResponse){}// 查看当前有哪些业务命名空间,业务命名空间有哪些目标命名空间
+	Update(ctx context.Context, in *UpdateQuery, opts ...grpc.CallOption) (*UpdateResponse, error)
+	Rank(ctx context.Context, in *RankQuery, opts ...grpc.CallOption) (*RankResponse, error)
 }
 
 type tHOMPSONSAMPLINGClient struct {
@@ -278,9 +537,18 @@ func NewTHOMPSONSAMPLINGClient(cc grpc.ClientConnInterface) THOMPSONSAMPLINGClie
 	return &tHOMPSONSAMPLINGClient{cc}
 }
 
-func (c *tHOMPSONSAMPLINGClient) Rank(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/thompsonsamplingdeclare.THOMPSONSAMPLING/Rank", in, out, opts...)
+func (c *tHOMPSONSAMPLINGClient) Update(ctx context.Context, in *UpdateQuery, opts ...grpc.CallOption) (*UpdateResponse, error) {
+	out := new(UpdateResponse)
+	err := c.cc.Invoke(ctx, "/thompsonsampling.THOMPSONSAMPLING/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tHOMPSONSAMPLINGClient) Rank(ctx context.Context, in *RankQuery, opts ...grpc.CallOption) (*RankResponse, error) {
+	out := new(RankResponse)
+	err := c.cc.Invoke(ctx, "/thompsonsampling.THOMPSONSAMPLING/Rank", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -289,14 +557,19 @@ func (c *tHOMPSONSAMPLINGClient) Rank(ctx context.Context, in *Query, opts ...gr
 
 // THOMPSONSAMPLINGServer is the server API for THOMPSONSAMPLING service.
 type THOMPSONSAMPLINGServer interface {
-	Rank(context.Context, *Query) (*Response, error)
+	// rpc Meta (MetaQuery) returns (MetaResponse){}// 查看当前有哪些业务命名空间,业务命名空间有哪些目标命名空间
+	Update(context.Context, *UpdateQuery) (*UpdateResponse, error)
+	Rank(context.Context, *RankQuery) (*RankResponse, error)
 }
 
 // UnimplementedTHOMPSONSAMPLINGServer can be embedded to have forward compatible implementations.
 type UnimplementedTHOMPSONSAMPLINGServer struct {
 }
 
-func (*UnimplementedTHOMPSONSAMPLINGServer) Rank(context.Context, *Query) (*Response, error) {
+func (*UnimplementedTHOMPSONSAMPLINGServer) Update(context.Context, *UpdateQuery) (*UpdateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedTHOMPSONSAMPLINGServer) Rank(context.Context, *RankQuery) (*RankResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Rank not implemented")
 }
 
@@ -304,8 +577,26 @@ func RegisterTHOMPSONSAMPLINGServer(s *grpc.Server, srv THOMPSONSAMPLINGServer) 
 	s.RegisterService(&_THOMPSONSAMPLING_serviceDesc, srv)
 }
 
+func _THOMPSONSAMPLING_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateQuery)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(THOMPSONSAMPLINGServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/thompsonsampling.THOMPSONSAMPLING/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(THOMPSONSAMPLINGServer).Update(ctx, req.(*UpdateQuery))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _THOMPSONSAMPLING_Rank_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Query)
+	in := new(RankQuery)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -314,18 +605,22 @@ func _THOMPSONSAMPLING_Rank_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/thompsonsamplingdeclare.THOMPSONSAMPLING/Rank",
+		FullMethod: "/thompsonsampling.THOMPSONSAMPLING/Rank",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(THOMPSONSAMPLINGServer).Rank(ctx, req.(*Query))
+		return srv.(THOMPSONSAMPLINGServer).Rank(ctx, req.(*RankQuery))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 var _THOMPSONSAMPLING_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "thompsonsamplingdeclare.THOMPSONSAMPLING",
+	ServiceName: "thompsonsampling.THOMPSONSAMPLING",
 	HandlerType: (*THOMPSONSAMPLINGServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Update",
+			Handler:    _THOMPSONSAMPLING_Update_Handler,
+		},
 		{
 			MethodName: "Rank",
 			Handler:    _THOMPSONSAMPLING_Rank_Handler,

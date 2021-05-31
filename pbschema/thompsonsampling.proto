@@ -1,17 +1,51 @@
 syntax = "proto3";
-package thompsonsamplingdeclare;
+package thompsonsampling;
 option go_package = "./thompsonsampling";
 
 service THOMPSONSAMPLING {
-    rpc Rank (Query) returns (Response){}
+    // rpc Meta (MetaQuery) returns (MetaResponse){}// 查看当前有哪些业务命名空间,业务命名空间有哪些目标命名空间
+    rpc Update (UpdateQuery) returns (UpdateResponse){}
+    rpc Rank (RankQuery) returns (RankResponse){}
 }
-message Query {
+
+// message MetaQuery {
+//     string business_namespcae = 1; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+// }
+
+// message BusinessTargets {
+//     string business_namespcae = 1; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+//     repeated string target_namespaces = 2; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+// }
+
+// message MetaResponse {
+//     repeated string ordered_candidates = 1;
+// }
+message UpdateQuery {
+    enum Type {
+        INCR = 0;
+        RESET = 1;
+    }
+    Type update_type = 1;// 更新类型,是重置还是增量
+    string business_namespcae = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
+    string target_namespace = 3; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
+    string candidate = 4;// 针对的目标候选人
+    double alpha = 5;//候选人的alpha参数
+    double beta = 6;//候选人的beta参数
+    int64 ttl = 7;//reset键的过期时长,单位s
+}
+
+message UpdateResponse {
+    double alpha = 1;//候选人的alpha参数当前值
+    double beta = 2;//候选人的beta参数当前值
+}
+
+message RankQuery {
     bool desc = 1;//是否倒叙从大到小
     string business_namespcae = 2; //针对业务控制的命名空间,空字符串含义为全局,redis中以`__global__`替代
     string target_namespace = 3; //针对目标控制的命名空间,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代
     repeated string candidates = 4;
 }
 
-message Response {
+message RankResponse {
     repeated string ordered_candidates = 1;
 }
