@@ -2,76 +2,91 @@ package thompsonsampling
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	log "github.com/Golang-Tools/loggerhelper"
 	rp "github.com/Golang-Tools/redishelper/proxy"
+	"github.com/go-redis/redis/v8"
 )
 
-func (s *Server) ResetParamToRedis(key string, alpha, beta float64, ttl time.Duration) (float64, float64, error) {
+func (s *Server) ResetParamToRedis(business_namespcae, target_namespacestring string, ttl time.Duration, infos ...*CandidateUpdateInfo) ([]*CandidateUpdateInfo, error) {
 	ctx, cancel := s.QueryRedisCtx()
 	defer cancel()
 	pipe := rp.Proxy.TxPipeline()
-	pipe.HSet(ctx, key, "alpha", alpha, "beta", beta)
-	pipe.Expire(ctx, key, ttl)
+	for _, info := range infos {
+		key := BuildKey(business_namespcae, target_namespacestring, info.Candidate)
+		pipe.HSet(ctx, key, "alpha", info.Alpha, "beta", info.Beta)
+		pipe.Expire(ctx, key, ttl)
+	}
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
-	return alpha, beta, nil
+	return infos, nil
 }
 
-func (s *Server) IncrParamToRedis(key string, alpha, beta float64) (float64, float64, error) {
+func (s *Server) IncrParamToRedis(business_namespcae, target_namespacestring string, ttl time.Duration, infos ...*CandidateUpdateInfo) ([]*CandidateUpdateInfo, error) {
 	ctx, cancel := s.QueryRedisCtx()
 	defer cancel()
+	alphafus := map[string]*redis.FloatCmd{}
+	betafus := map[string]*redis.FloatCmd{}
 	pipe := rp.Proxy.TxPipeline()
-	alphaFut := pipe.HIncrByFloat(ctx, key, "alpha", alpha)
-	betaFut := pipe.HIncrByFloat(ctx, key, "beta", beta)
+	for _, info := range infos {
+		key := BuildKey(business_namespcae, target_namespacestring, info.Candidate)
+		alphafus[info.Candidate] = pipe.HIncrByFloat(ctx, key, "alpha", info.Alpha)
+		betafus[info.Candidate] = pipe.HIncrByFloat(ctx, key, "beta", info.Beta)
+		pipe.Expire(ctx, key, ttl)
+	}
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
-	a, err := alphaFut.Result()
-	if err != nil {
-		return 0, 0, err
+	result := []*CandidateUpdateInfo{}
+	for _, info := range infos {
+		a, err := alphafus[info.Candidate].Result()
+		if err != nil {
+			return nil, err
+		}
+		b, err := betafus[info.Candidate].Result()
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, &CandidateUpdateInfo{
+			Alpha: a,
+			Beta:  b,
+		})
 	}
-	b, err := betaFut.Result()
-	if err != nil {
-		return 0, 0, err
-	}
-	return a, b, nil
+
+	return result, nil
 }
 
 //Update
 func (s *Server) Update(ctx context.Context, in *UpdateQuery) (*UpdateResponse, error) {
 	log.Info("Rank get message ", log.Dict{"in": in})
-	if in.Candidate == "" {
-		return nil, errors.New("Candidate empty")
-	}
-	key := BuildKey(in.BusinessNamespace, in.TargetNamespace, in.Candidate)
-	var alpha float64
-	var beta float64
+	var result []*CandidateUpdateInfo
 	var err error
 	switch in.UpdateType {
 	case UpdateQuery_RESET:
 		{
 			if in.Ttl >= 1 {
-				alpha, beta, err = s.ResetParamToRedis(key, in.Alpha, in.Beta, time.Duration(in.Ttl)*time.Second)
+				result, err = s.ResetParamToRedis(in.BusinessNamespace, in.TargetNamespace, time.Duration(in.Ttl)*time.Second, in.CandidateUpdateInfo...)
 			} else {
-				alpha, beta, err = s.ResetParamToRedis(key, in.Alpha, in.Beta, time.Duration(s.DefaultKeyTTL)*time.Second)
+				result, err = s.ResetParamToRedis(in.BusinessNamespace, in.TargetNamespace, time.Duration(s.DefaultKeyTTL)*time.Second, in.CandidateUpdateInfo...)
 			}
 		}
 	default:
 		{
-			alpha, beta, err = s.IncrParamToRedis(key, in.Alpha, in.Beta)
+			if in.Ttl >= 1 {
+				result, err = s.IncrParamToRedis(in.BusinessNamespace, in.TargetNamespace, time.Duration(in.Ttl)*time.Second, in.CandidateUpdateInfo...)
+			} else {
+				result, err = s.IncrParamToRedis(in.BusinessNamespace, in.TargetNamespace, time.Duration(s.DefaultKeyTTL)*time.Second, in.CandidateUpdateInfo...)
+			}
 		}
 	}
 	if err != nil {
 		return nil, err
 	}
 	return &UpdateResponse{
-		Alpha: alpha,
-		Beta:  beta,
+		CandidateUpdateInfo: result,
 	}, nil
 }

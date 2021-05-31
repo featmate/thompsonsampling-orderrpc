@@ -1,7 +1,9 @@
 {
     "business_namespace": "test",
     "target_namespace": "test",
-    "candidate": "a",
-    "alpha": 2.0,
-    "beta": 4.0
+    "candidate_update_info": {
+        "candidate": "a",
+        "alpha": 2.0,
+        "beta": 4.0
+    }
 }
