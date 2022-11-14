@@ -1,5 +1,25 @@
 {
-    "author": "hsz",
+    "added_components": {
+        "cp_dockercompose@v0.0.2//server_standalone": "docker-compose.yml",
+        "cp_dockerfiles@v0.0.1//go_grpc_pure_dockerfile": "dockerfile",
+        "cp_go_grpc@v2.0.2//main": "main.go",
+        "cp_go_grpc@v2.0.2//schema": "pbschema",
+        "cp_go_grpc@v2.0.2//sdk": "thompsonsampling-orderrpc_sdk",
+        "cp_go_grpc@v2.0.2//serv": "thompsonsampling-orderrpc_serv"
+    },
+    "author": "mac",
     "env": "gomod",
+    "requires": [
+        "github.com/Golang-Tools/grpcsdk@v0.0.2",
+        "github.com/Golang-Tools/loggerhelper/v2@v2.0.2",
+        "github.com/Golang-Tools/schema-entry-go/v2@v2.1.0",
+        "github.com/felixge/httpsnoop@v1.0.3",
+        "github.com/flowchartsman/swaggerui@v0.0.0-20210303154956-0e71c297862e",
+        "github.com/grpc-ecosystem/grpc-gateway/v2@v2.10.3",
+        "github.com/soheilhy/cmux@v0.1.5",
+        "google.golang.org/genproto@v0.0.0-20220615141314-f1464d18c36b",
+        "google.golang.org/grpc@v1.47.0",
+        "google.golang.org/protobuf@v1.28.0"
+    ],
     "version": "0.0.0"
 }

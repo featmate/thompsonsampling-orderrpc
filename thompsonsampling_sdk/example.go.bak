@@ -1,0 +1,140 @@
+package thompsonsampling-orderrpc_sdk
+
+import (
+	"context"
+	"io"
+	"os"
+	"thompsonsampling-orderrpc/thompsonsampling-orderrpc_pb"
+
+	"github.com/Golang-Tools/grpcsdk"
+	log "github.com/Golang-Tools/loggerhelper/v2"
+
+	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+)
+
+type Config grpcsdk.SDKConfig
+
+//Main 执行测试
+func (c *Config) Main() {
+	defer func() {
+		if err := recover(); err != nil {
+			SDK.Logger.Info("recover error", log.Dict{"err": err})
+			os.Exit(1)
+		}
+	}()
+	SDK.Logger.Info("setup sdk ok")
+	err := SDK.Init(grpcsdk.WithConfig((*grpcsdk.SDKConfig)(c)))
+	if err != nil {
+		SDK.Logger.Error("init get error", log.Dict{"err": err.Error()})
+	}
+	defer SDK.Close()
+	SDK.Logger.Info("setup sdk init ok")
+	Conn, release := SDK.GetClient()
+	defer release()
+	SDK.Logger.Info("setup sdk GetClient ok")
+	SDK.Logger.Info("setup ok")
+	//req-res
+	ctx, cancel := SDK.NewCtx(SDK.WithRequestMeta(), grpcsdk.WithMeta("a", "1"), grpcsdk.WithMeta("b", "2"))
+	defer cancel()
+
+	var header, trailer metadata.MD
+	req, err := Conn.Square(ctx, &thompsonsampling-orderrpc_pb.Message{Message: 2.0},
+		grpc.Header(&header),   // will retrieve header
+		grpc.Trailer(&trailer), // will retrieve trailer
+	)
+	if err != nil {
+		SDK.Logger.Error("Square get error", log.Dict{"err": err.Error()})
+		os.Exit(1)
+	}
+	SDK.Logger.Info("Square get result", log.Dict{"header": header, "req": req, "trailer": trailer})
+
+	//req-stream
+	ResStream, err := Conn.RangeSquare(context.Background(), &thompsonsampling-orderrpc_pb.Message{Message: 4.0})
+	if err != nil {
+		SDK.Logger.Error("RangeSquare get error", log.Dict{"err": err.Error()})
+		os.Exit(1)
+	}
+	for {
+		feature, err := ResStream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				SDK.Logger.Error("RangeSquare(_) = _", log.Dict{"err": err.Error()})
+				os.Exit(1)
+			}
+		}
+		SDK.Logger.Info("RangeSquare get res", log.Dict{"res": feature})
+	}
+
+	//stream-res
+	ReqStream, err := Conn.SumSquare(context.Background())
+	if err != nil {
+		SDK.Logger.Error("SumSquare get error", log.Dict{"err": err.Error()})
+		os.Exit(1)
+	}
+	for i := 0; i < 5; i++ {
+		m := &thompsonsampling-orderrpc_pb.Message{Message: float64(i)}
+		err := ReqStream.Send(m)
+		if err != nil {
+			SDK.Logger.Error("SumSquare Send() get err", log.Dict{"m": m, "err": err.Error()})
+			os.Exit(1)
+		}
+	}
+	reply, err := ReqStream.CloseAndRecv()
+	if err != nil {
+		SDK.Logger.Error("ReqStream CloseAndRecv() got err", log.Dict{"err": err.Error()})
+		os.Exit(1)
+	}
+	SDK.Logger.Info("ReqStream get summary", log.Dict{"reply": reply})
+
+	//stream-stream
+	sConn, srelease := SDK.GetClient()
+	defer srelease()
+	sctx, scancel := SDK.NewCtx(SDK.WithRequestMeta(), grpcsdk.WithMeta("a", "1"), grpcsdk.WithMeta("b", "2"), grpcsdk.UntilEnd())
+	defer scancel()
+	ReqResStream, err := sConn.StreamrangeSquare(sctx)
+	if err != nil {
+		SDK.Logger.Error("StreamrangeSquare get err", log.Dict{"err": err.Error()})
+		os.Exit(1)
+	}
+
+	// retrieve header
+	streamheader, err := ReqResStream.Header()
+	if err != nil {
+		SDK.Logger.Error("StreamrangeSquare get header get error", log.Dict{"err": err.Error()})
+		os.Exit(1)
+	}
+	SDK.Logger.Info("StreamrangeSquare get header", log.Dict{"header": streamheader})
+	go func() {
+		for i := 0; i < 5; i++ {
+			m := &thompsonsampling-orderrpc_pb.Message{Message: float64(i)}
+			err := ReqResStream.Send(m)
+			if err != nil {
+				SDK.Logger.Error("StreamrangeSquare Send get error", log.Dict{"m": m, "err": err.Error()})
+				os.Exit(1)
+			}
+		}
+		err := ReqResStream.CloseSend()
+		if err != nil {
+			SDK.Logger.Error("StreamrangeSquare CloseSend get error", log.Dict{"err": err.Error()})
+		}
+	}()
+	for {
+		feature, err := ReqResStream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				SDK.Logger.Error("StreamrangeSquare get err", log.Dict{"err": err.Error()})
+				os.Exit(1)
+			}
+		}
+		SDK.Logger.Info("StreamrangeSquare get result", log.Dict{"res": feature})
+
+	}
+	// retrieve trailer
+	streamtrailer := ReqResStream.Trailer()
+	SDK.Logger.Info("StreamrangeSquare get trailer", log.Dict{"trailer": streamtrailer})
+}

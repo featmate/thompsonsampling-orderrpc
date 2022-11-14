@@ -1,0 +1,408 @@
+syntax = "proto3";
+package thompsonsampling;
+import "pbschema/google/api/annotations.proto";
+import "pbschema/protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/empty.proto";
+// import "google/api/httpbody.proto";
+option go_package = "./thompsonsampling_pb";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "thompsonsampling";
+        version: "0.0.0";
+        contact: {
+            name: "hsz1273327";
+            url: "https://github.com/featmate/thompsonsampling-orderrpc";
+            email: "hsz1273327@gmail.com";
+        };
+    };
+    schemes: HTTP;
+    schemes: HTTPS;
+    schemes: WSS;
+    consumes: "application/json";
+    consumes: "application/x-foo-mime";
+    produces: "application/json";
+    produces: "application/x-foo-mime";
+  };
+
+
+service THOMPSONSAMPLING {
+    // meta
+    rpc GetMeta (google.protobuf.Empty) returns (MetaResponse){
+        option (google.api.http) = {
+            get: "/api/meta"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取服务的基础数据";
+            operation_id: "getMeta";
+            tags: "Meta";
+        };
+    }
+
+    // Scope
+    rpc GetScopeInfo (Scope) returns (ScopeResponse){
+        option (google.api.http) = {
+            get: "/api/scope"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取指定范围的当前状态";
+            description: "需要启动ScopeObserveMode特性并配置etcd";
+            operation_id: "getScopeInfo";
+            tags: "Scope";
+        };
+    }
+    rpc InScope (InScopeQuery) returns (InScopeResponse){
+        option (google.api.http) = {
+            get: "/api/scope/contains"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取指定范围的当前状态";
+            description: "需要启动ScopeObserveMode特性并配置etcd";
+            operation_id: "inScope";
+            tags: "Scope";
+        };
+    }
+    // Candidate
+    rpc GetCandidateInfo (CandidateInfoQuery) returns (CandidateInfoResponse){
+        option (google.api.http) = {
+            get: "/api/candidate"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取指定范围内物品的当前状态";
+            operation_id: "getCandidateInfo";
+            tags: "Candidate";
+        };
+    }
+    //UpdateCandidate 更新参数
+    rpc UpdateCandidate (CandidateUpdateQuery) returns (CandidateUpdateResponse){
+        option (google.api.http) = {
+            post: "/api/candidate"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "更新候选者参数";
+            operation_id: "updateCandidate";
+            tags: "Candidate";
+        };
+    }
+    // 操作
+    //Rank 排序候选集
+    rpc Rank (RankQuery) returns (RankResponse){
+        option (google.api.http) = {
+            post: "/api/operation/rank"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "排序候选集";
+            operation_id: "Rank";
+            tags: "Operation";
+        };
+    }
+    //Top 返回可能性最大的后选者
+    rpc Top(TopQuery) returns (TopResponse){
+        option (google.api.http) = {
+            post: "/api/operation/top"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "返回可能性最大的候选者";
+            operation_id: "Top";
+            tags: "Operation";
+        };
+    }
+}
+//通用
+message Scope {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+      json_schema: {
+          title: "Scope"
+          description: "业务定义范围"
+      }
+    };
+    string business = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "针对业务控制的范围,空字符串含义为全局,redis中以`__global__`替代"
+    }];
+    string target = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "针对目标控制的范围,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代"
+    }];
+}
+  
+message BetaParam {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "BetaParam"
+            description: "候选人的beta分布参数"
+        }
+    };
+    double alpha = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选人的alpha参数"
+    }];
+    double beta = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选人的beta参数"
+    }];
+}
+
+//meta
+message NamespaceSetting {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "NamespaceSetting"
+            description: "命名空间设置."
+        }
+    };
+
+    string ALGO   =1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "算法命名空间"
+    }];
+    string ALGOMeta  =2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "算法元信息命名空间"
+    }];
+    string DefaultBusinessName =3[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "默认业务名"
+    }];
+    string DefaultTargetName  =4[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "默认目标名"
+    }];
+}
+message MetaResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "MetaResponse"
+            description: "."
+            required: ["Message"]
+        }
+    };
+    // redis连接设置
+	string RedisURL  =1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "保存点击和未点击数据的redis位置"
+    }];
+	int64 QueryRedisTimeout =2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "请求redis的超时时长,单位ms"
+    }];
+    string Redis_RouteMod  =3[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "redis集群的连接策略,enum=bylatency,enum=randomly,enum=none,default=none"
+    }];
+	int64 DefaultKeyTTL =4[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "保存键的默认过期时间,单位s"
+    }];
+    NamespaceSetting namespace_setting = 5[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "key命名空间设置"
+    }];
+    bool scope_observe_mode =6[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否开启范围观测模式"
+    }];
+	string scope_observe_mode_etcdurl =7[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "范围观测模式使用的etcd路径"
+    }];
+	int64 scope_observe_mode_conntimeout =8[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "范围观测模式连接的etcd的最大超时单位ms"
+    }];
+}
+//Scop
+message ScopeResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "ScopeResponse"
+            description: "获取业务状态响应"
+        }
+    };
+    int64 count = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "范围内候选者数量"
+    }];
+    map<string,int64> list = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description: "全部候选者列表,key为候选者名,value为过期时间"
+  }];
+}
+
+message InScopeQuery {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "InfoResponse"
+            description: "检查物品是否在范围内的的请求"
+        }
+    };
+    Scope scope = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "框定业务范围"
+    }];
+    repeated string candidates = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "待检查的候选者"
+    }];
+}
+message InScopeResponse{
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "InScopeResponse"
+            description: "检查"
+        }
+    };
+    map<string,bool> result= 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "结果,key为candidate,value为是否在范围内"
+    }];
+}
+
+//Candidate
+message CandidateInfoQuery {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "InfoQuery"
+            description: "获取业务状态请求"
+        }
+    };
+    Scope scope = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "框定业务范围"
+    }];
+    repeated string candidates = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "要观察的候选人"
+    }];
+}
+
+message CandidateInfo {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "CandidateInfo"
+            description: "候选人的信息"
+        }
+    };
+    BetaParam param = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选者当前得分信息"
+    }];
+    int64 ttl = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "过期时间,单位s"
+    }];
+}
+
+message CandidateInfoResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "InfoResponse"
+            description: "获取业务状态响应"
+        }
+    };
+    map<string,CandidateInfo> infos = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选者当前得分信息,key为候选者名"
+    }];
+}
+
+message CandidateUpdateInfo {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "CandidateUpdateInfo"
+            description: "更新业务状态的请求"
+        }
+    };
+    string candidate = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "针对的目标候选人"
+    }];
+    BetaParam param = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选人要设置的得分信息"
+    }];
+}
+
+message CandidateUpdateQuery {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "UpdateQuery"
+            description: "更新业务状态的请求"
+        }
+    };
+    enum UpdateMod {
+        INCR = 0; //增加
+        RESET = 1; //重置
+    }
+
+    Scope scope = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description: "框定业务范围"
+    }];
+    UpdateMod update_type = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "更新类型,是重置还是增量"
+    }];
+    int64 ttl = 3[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "reset键的过期时长,单位s,如果激活ScopeObserveMode,在第一次创建后后续刷新将无效而是沿用之前的"
+    }];
+    repeated CandidateUpdateInfo candidate_update_info = 5[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "要更新的信息列表"
+    }];
+}
+
+message CandidateUpdateResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "UpdateResponse"
+            description: "更新业务状态的响应"
+        }
+    };
+    repeated CandidateUpdateInfo candidate_update_info = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "更新的信息列表状态"
+    }];
+}
+
+
+//操作
+message RankQuery {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "RankQuery"
+            description: "请求排续"
+        }
+    };
+    Scope scope = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description: "框定业务范围"
+    }];
+    bool desc = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否倒叙从大到小"
+      }];
+    repeated string candidates = 3[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description: "待排序的对象"
+  }];
+}
+
+message WeightedCandidate {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "WeightedCandidate"
+            description: "待权重的候选者"
+        }
+    };
+    string Candidate = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选者"
+    }];
+    double Weight = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "候选者的权重"
+    }];
+}
+
+message RankResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "RankResponse"
+            description: "排序的响应"
+        }
+    };
+    repeated WeightedCandidate ordered_candidates = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "排好顺序的候选者信息"
+    }];
+}
+message TopQuery {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "TopQuery"
+            description: "请求候选者中可能性最大的那个"
+        }
+    };
+    Scope scope = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "框定业务范围"
+    }];
+    repeated string candidates = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "给出候选人列表"
+    }];
+}
+message TopResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "TopResponse"
+            description: "返回可能性最大的那个"
+        }
+    };
+    string candidate = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "可能性最大的候选人"
+    }];
+}

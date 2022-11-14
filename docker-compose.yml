@@ -1,0 +1,35 @@
+version: '2.4'
+services:
+    redis-backend:
+        image: hsz1273327/redis-allinone:redis7-1.2.1
+        command: ["/etc/redis-config/redis.conf"]
+        ports:
+        - 6379:6379
+    etcdmetastore:
+        image: docker.io/bitnami/etcd:3.5.1
+        logging:
+            options:
+                max-file: 3
+                max-size: 10m
+        environment:
+            - ALLOW_NONE_AUTHENTICATION=yes
+            - ETCDCTL_API=3
+    serv:
+        build:
+            context: .
+            dockerfile: dockerfile.cn
+        logging:
+            options:
+                max-file: 3
+                max-size: 10m
+        ports:
+            - "5000:5000"
+        depends_on:
+            - redis-backend
+            - etcdmetastore
+        environment:
+            THOMPSONSAMPLING_LOG_LEVEL: "INFO"
+            THOMPSONSAMPLING_REDISURL: redis://redis-backend/0
+            THOMPSONSAMPLING_USE_GATEWAY: "true"
+            THOMPSONSAMPLING_SCOPEOBSERVEMODE: "true"
+            THOMPSONSAMPLING_SCOPEOBSERVEMODE_ETCDURL: "etcdmetastore:2379"

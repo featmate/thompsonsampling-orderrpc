@@ -1,1 +1,0 @@
-ppm grpc query -p -s thompsonsampling.THOMPSONSAMPLING -m Rank -d query_{}.json localhost:5000

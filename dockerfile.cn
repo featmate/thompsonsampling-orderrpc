@@ -1,6 +1,7 @@
 # 构造可执行文件
 FROM --platform=$TARGETPLATFORM golang:1.19.3-alpine as build_bin
 ENV GO111MODULE=on
+ENV GOPROXY=https://goproxy.cn
 # 停用cgo
 ENV CGO_ENABLED=0
 WORKDIR /code
@@ -17,6 +18,7 @@ RUN go build -ldflags "-s -w" -o thompsonsampling-go main.go
 FROM --platform=$TARGETPLATFORM alpine:3.11 as upx
 WORKDIR /code
 # 安装upx
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk update && apk add --no-cache upx && rm -rf /var/cache/apk/*
 COPY --from=build_bin /code/thompsonsampling-go .
 RUN upx --best --lzma -o thompsonsampling thompsonsampling-go
@@ -24,6 +26,7 @@ RUN upx --best --lzma -o thompsonsampling thompsonsampling-go
 # 编译获得grpc-health-probe
 FROM --platform=$TARGETPLATFORM golang:1.19.3-buster as build_grpc-health-probe
 ENV GO111MODULE=on
+ENV GOPROXY=https://goproxy.cn
 # 停用cgo
 ENV CGO_ENABLED=0
 # 安装grpc-health-probe

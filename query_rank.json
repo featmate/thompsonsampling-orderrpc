@@ -1,5 +1,0 @@
-{
-    "business_namespace": "test",
-    "target_namespace": "test",
-    "candidates": ["a", "b", "c"]
-}

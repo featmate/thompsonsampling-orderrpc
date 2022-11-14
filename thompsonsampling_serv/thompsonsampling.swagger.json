@@ -1,0 +1,632 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "thompsonsampling",
+    "version": "0.0.0",
+    "contact": {
+      "name": "hsz1273327",
+      "url": "https://github.com/featmate/thompsonsampling-orderrpc",
+      "email": "hsz1273327@gmail.com"
+    }
+  },
+  "tags": [
+    {
+      "name": "THOMPSONSAMPLING"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https",
+    "wss"
+  ],
+  "consumes": [
+    "application/json",
+    "application/x-foo-mime"
+  ],
+  "produces": [
+    "application/json",
+    "application/x-foo-mime"
+  ],
+  "paths": {
+    "/api/candidate": {
+      "get": {
+        "summary": "获取指定范围内物品的当前状态",
+        "operationId": "getCandidateInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingCandidateInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "scope.business",
+            "description": "针对业务控制的范围,空字符串含义为全局,redis中以`__global__`替代",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "scope.target",
+            "description": "针对目标控制的范围,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "candidates",
+            "description": "要观察的候选人",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Candidate"
+        ]
+      },
+      "post": {
+        "summary": "更新候选者参数",
+        "operationId": "updateCandidate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingCandidateUpdateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingCandidateUpdateQuery"
+            }
+          }
+        ],
+        "tags": [
+          "Candidate"
+        ]
+      }
+    },
+    "/api/meta": {
+      "get": {
+        "summary": "获取服务的基础数据",
+        "operationId": "getMeta",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingMetaResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Meta"
+        ]
+      }
+    },
+    "/api/operation/rank": {
+      "post": {
+        "summary": "排序候选集",
+        "operationId": "Rank",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingRankResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingRankQuery"
+            }
+          }
+        ],
+        "tags": [
+          "Operation"
+        ]
+      }
+    },
+    "/api/operation/top": {
+      "post": {
+        "summary": "返回可能性最大的候选者",
+        "operationId": "Top",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingTopResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingTopQuery"
+            }
+          }
+        ],
+        "tags": [
+          "Operation"
+        ]
+      }
+    },
+    "/api/scope": {
+      "get": {
+        "summary": "获取指定范围的当前状态",
+        "description": "需要启动ScopeObserveMode特性并配置etcd",
+        "operationId": "getScopeInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingScopeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "business",
+            "description": "针对业务控制的范围,空字符串含义为全局,redis中以`__global__`替代",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "target",
+            "description": "针对目标控制的范围,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Scope"
+        ]
+      }
+    },
+    "/api/scope/contains": {
+      "get": {
+        "summary": "获取指定范围的当前状态",
+        "description": "需要启动ScopeObserveMode特性并配置etcd",
+        "operationId": "inScope",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/thompsonsamplingInScopeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "scope.business",
+            "description": "针对业务控制的范围,空字符串含义为全局,redis中以`__global__`替代",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "scope.target",
+            "description": "针对目标控制的范围,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "candidates",
+            "description": "待检查的候选者",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Scope"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CandidateUpdateQueryUpdateMod": {
+      "type": "string",
+      "enum": [
+        "INCR",
+        "RESET"
+      ],
+      "default": "INCR"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "thompsonsamplingBetaParam": {
+      "type": "object",
+      "properties": {
+        "alpha": {
+          "type": "number",
+          "format": "double",
+          "description": "候选人的alpha参数"
+        },
+        "beta": {
+          "type": "number",
+          "format": "double",
+          "description": "候选人的beta参数"
+        }
+      },
+      "description": "候选人的beta分布参数",
+      "title": "BetaParam"
+    },
+    "thompsonsamplingCandidateInfo": {
+      "type": "object",
+      "properties": {
+        "param": {
+          "$ref": "#/definitions/thompsonsamplingBetaParam",
+          "description": "候选者当前得分信息"
+        },
+        "ttl": {
+          "type": "string",
+          "format": "int64",
+          "description": "过期时间,单位s"
+        }
+      },
+      "description": "候选人的信息",
+      "title": "CandidateInfo"
+    },
+    "thompsonsamplingCandidateInfoResponse": {
+      "type": "object",
+      "properties": {
+        "infos": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/thompsonsamplingCandidateInfo"
+          },
+          "description": "候选者当前得分信息,key为候选者名"
+        }
+      },
+      "description": "获取业务状态响应",
+      "title": "InfoResponse"
+    },
+    "thompsonsamplingCandidateUpdateInfo": {
+      "type": "object",
+      "properties": {
+        "candidate": {
+          "type": "string",
+          "description": "针对的目标候选人"
+        },
+        "param": {
+          "$ref": "#/definitions/thompsonsamplingBetaParam",
+          "description": "候选人要设置的得分信息"
+        }
+      },
+      "description": "更新业务状态的请求",
+      "title": "CandidateUpdateInfo"
+    },
+    "thompsonsamplingCandidateUpdateQuery": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "$ref": "#/definitions/thompsonsamplingScope",
+          "description": "框定业务范围"
+        },
+        "updateType": {
+          "$ref": "#/definitions/CandidateUpdateQueryUpdateMod",
+          "description": "更新类型,是重置还是增量"
+        },
+        "ttl": {
+          "type": "string",
+          "format": "int64",
+          "description": "reset键的过期时长,单位s,如果激活ScopeObserveMode,在第一次创建后后续刷新将无效而是沿用之前的"
+        },
+        "candidateUpdateInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/thompsonsamplingCandidateUpdateInfo"
+          },
+          "description": "要更新的信息列表"
+        }
+      },
+      "description": "更新业务状态的请求",
+      "title": "UpdateQuery"
+    },
+    "thompsonsamplingCandidateUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "candidateUpdateInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/thompsonsamplingCandidateUpdateInfo"
+          },
+          "description": "更新的信息列表状态"
+        }
+      },
+      "description": "更新业务状态的响应",
+      "title": "UpdateResponse"
+    },
+    "thompsonsamplingInScopeResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "description": "结果,key为candidate,value为是否在范围内"
+        }
+      },
+      "description": "检查",
+      "title": "InScopeResponse"
+    },
+    "thompsonsamplingMetaResponse": {
+      "type": "object",
+      "properties": {
+        "RedisURL": {
+          "type": "string",
+          "description": "保存点击和未点击数据的redis位置",
+          "title": "redis连接设置"
+        },
+        "QueryRedisTimeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "请求redis的超时时长,单位ms"
+        },
+        "RedisRouteMod": {
+          "type": "string",
+          "description": "redis集群的连接策略,enum=bylatency,enum=randomly,enum=none,default=none"
+        },
+        "DefaultKeyTTL": {
+          "type": "string",
+          "format": "int64",
+          "description": "保存键的默认过期时间,单位s"
+        },
+        "namespaceSetting": {
+          "$ref": "#/definitions/thompsonsamplingNamespaceSetting",
+          "description": "key命名空间设置"
+        },
+        "scopeObserveMode": {
+          "type": "boolean",
+          "description": "是否开启范围观测模式"
+        },
+        "scopeObserveModeEtcdurl": {
+          "type": "string",
+          "description": "范围观测模式使用的etcd路径"
+        },
+        "scopeObserveModeConntimeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "范围观测模式连接的etcd的最大超时单位ms"
+        }
+      },
+      "description": ".",
+      "title": "MetaResponse",
+      "required": [
+        "Message"
+      ]
+    },
+    "thompsonsamplingNamespaceSetting": {
+      "type": "object",
+      "properties": {
+        "ALGO": {
+          "type": "string",
+          "description": "算法命名空间"
+        },
+        "ALGOMeta": {
+          "type": "string",
+          "description": "算法元信息命名空间"
+        },
+        "DefaultBusinessName": {
+          "type": "string",
+          "description": "默认业务名"
+        },
+        "DefaultTargetName": {
+          "type": "string",
+          "description": "默认目标名"
+        }
+      },
+      "description": "命名空间设置.",
+      "title": "NamespaceSetting"
+    },
+    "thompsonsamplingRankQuery": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "$ref": "#/definitions/thompsonsamplingScope",
+          "description": "框定业务范围"
+        },
+        "desc": {
+          "type": "boolean",
+          "description": "是否倒叙从大到小"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "待排序的对象"
+        }
+      },
+      "description": "请求排续",
+      "title": "RankQuery"
+    },
+    "thompsonsamplingRankResponse": {
+      "type": "object",
+      "properties": {
+        "orderedCandidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/thompsonsamplingWeightedCandidate"
+          },
+          "description": "排好顺序的候选者信息"
+        }
+      },
+      "description": "排序的响应",
+      "title": "RankResponse"
+    },
+    "thompsonsamplingScope": {
+      "type": "object",
+      "properties": {
+        "business": {
+          "type": "string",
+          "description": "针对业务控制的范围,空字符串含义为全局,redis中以`__global__`替代"
+        },
+        "target": {
+          "type": "string",
+          "description": "针对目标控制的范围,指代用户,用户分群等逻辑概念,空字符串含义为全局,redis中以`__global__`替代"
+        }
+      },
+      "description": "业务定义范围",
+      "title": "Scope"
+    },
+    "thompsonsamplingScopeResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64",
+          "description": "范围内候选者数量"
+        },
+        "list": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "int64"
+          },
+          "description": "全部候选者列表,key为候选者名,value为过期时间"
+        }
+      },
+      "description": "获取业务状态响应",
+      "title": "ScopeResponse"
+    },
+    "thompsonsamplingTopQuery": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "$ref": "#/definitions/thompsonsamplingScope",
+          "description": "框定业务范围"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "给出候选人列表"
+        }
+      },
+      "description": "请求候选者中可能性最大的那个",
+      "title": "TopQuery"
+    },
+    "thompsonsamplingTopResponse": {
+      "type": "object",
+      "properties": {
+        "candidate": {
+          "type": "string",
+          "description": "可能性最大的候选人"
+        }
+      },
+      "description": "返回可能性最大的那个",
+      "title": "TopResponse"
+    },
+    "thompsonsamplingWeightedCandidate": {
+      "type": "object",
+      "properties": {
+        "Candidate": {
+          "type": "string",
+          "description": "候选者"
+        },
+        "Weight": {
+          "type": "number",
+          "format": "double",
+          "description": "候选者的权重"
+        }
+      },
+      "description": "待权重的候选者",
+      "title": "WeightedCandidate"
+    }
+  }
+}
